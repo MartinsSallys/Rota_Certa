@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hack Brasil 2026 — Briefing da Equipe</title>
+<style>
+  :root{
+    --bg:#070b0a; --panel:#0e1614; --panel2:#121d1a;
+    --line:#1e2f2a; --txt:#e6f2ee; --dim:#8fa8a0;
+    --acc:#3ddc84; --acc2:#00b4d8; --warn:#ffb300; --danger:#ff5d5d;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg);color:var(--txt);font-family:var(--sans);
+    overflow:hidden;
+    background-image:radial-gradient(ellipse 80% 60% at 70% -10%, rgba(61,220,132,.10), transparent 60%),
+                     radial-gradient(ellipse 60% 50% at 0% 100%, rgba(0,180,216,.07), transparent 60%);
+  }
+  #deck{height:100%;position:relative}
+  .slide{
+    position:absolute;inset:0;display:none;flex-direction:column;
+    padding:48px 64px 88px;overflow:auto;
+  }
+  .slide.active{display:flex;animation:in .35s ease}
+  @keyframes in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+  .kicker{
+    font-family:var(--mono);font-size:12px;letter-spacing:.18em;
+    color:var(--acc);text-transform:uppercase;margin-bottom:14px;
+  }
+  .kicker::before{content:"// "}
+  h1{font-size:clamp(34px,5vw,64px);line-height:1.05;letter-spacing:-.02em;font-weight:800}
+  h2{font-size:clamp(26px,3.2vw,42px);line-height:1.1;letter-spacing:-.02em;font-weight:750;margin-bottom:6px}
+  .sub{color:var(--dim);font-size:17px;max-width:900px;margin-top:12px;line-height:1.55}
+  .grid{display:grid;gap:16px;margin-top:26px}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  .card{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:20px 22px;
+  }
+  .card h3{font-size:15px;margin-bottom:8px;letter-spacing:-.01em}
+  .card p{color:var(--dim);font-size:14px;line-height:1.55}
+  .big{font-family:var(--mono);font-size:clamp(28px,3vw,40px);font-weight:700;color:var(--acc);letter-spacing:-.03em}
+  .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+  .tag{
+    display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+    padding:4px 10px;border-radius:99px;border:1px solid var(--line);
+    color:var(--dim);background:var(--panel2);margin:4px 6px 0 0;
+  }
+  .tag.ok{border-color:rgba(61,220,132,.45);color:var(--acc);background:rgba(61,220,132,.08)}
+  .tag.warn{border-color:rgba(255,179,0,.45);color:var(--warn);background:rgba(255,179,0,.08)}
+  .tag.bad{border-color:rgba(255,93,93,.45);color:var(--danger);background:rgba(255,93,93,.08)}
+  .tag.info{border-color:rgba(0,180,216,.45);color:var(--acc2);background:rgba(0,180,216,.08)}
+  ul.clean{list-style:none;margin-top:10px}
+  ul.clean li{
+    color:var(--dim);font-size:14.5px;line-height:1.5;padding:7px 0 7px 22px;position:relative;
+    border-bottom:1px dashed rgba(30,47,42,.9);
+  }
+  ul.clean li:last-child{border-bottom:none}
+  ul.clean li::before{content:"▸";position:absolute;left:0;color:var(--acc);font-size:12px;top:8px}
+  ul.clean li b{color:var(--txt);font-weight:650}
+
+  /* timeline */
+  .tl{display:flex;gap:0;margin-top:30px;position:relative;flex-wrap:wrap}
+  .tl::before{content:"";position:absolute;top:13px;left:2%;right:2%;height:2px;background:linear-gradient(90deg,var(--acc),var(--acc2));opacity:.35}
+  .step{flex:1;min-width:150px;position:relative;padding-top:34px;padding-right:14px}
+  .step::before{
+    content:"";position:absolute;top:6px;left:0;width:16px;height:16px;border-radius:50%;
+    background:var(--bg);border:3px solid var(--acc);z-index:1;
+  }
+  .step.hot::before{border-color:var(--danger);box-shadow:0 0 0 5px rgba(255,93,93,.18)}
+  .step .d{font-family:var(--mono);font-size:13px;color:var(--acc);font-weight:700}
+  .step.hot .d{color:var(--danger)}
+  .step .t{font-size:14px;font-weight:650;margin-top:4px}
+  .step .n{font-size:12.5px;color:var(--dim);margin-top:3px;line-height:1.45}
+
+  /* table */
+  table{width:100%;border-collapse:collapse;margin-top:22px;font-size:13.5px}
+  th{
+    text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--dim);padding:10px 12px;
+    border-bottom:2px solid var(--line);
+  }
+  td{padding:13px 12px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.45;color:var(--dim)}
+  td:first-child{color:var(--txt);font-weight:650}
+  tr.pick td{background:rgba(61,220,132,.06)}
+  tr.pick td:first-child{color:var(--acc)}
+  .score{font-family:var(--mono);font-weight:700;color:var(--acc)}
+  .score.mid{color:var(--warn)} .score.low{color:var(--danger)}
+
+  /* risk card */
+  .risk{border-left:3px solid var(--danger)}
+  .risk h3{color:var(--danger)}
+  .good{border-left:3px solid var(--acc)}
+  .good h3{color:var(--acc)}
+  .neutral{border-left:3px solid var(--warn)}
+  .neutral h3{color:var(--warn)}
+
+  /* demo box */
+  .demo{
+    background:linear-gradient(180deg,#14100c,#0e1614);
+    border:1px solid rgba(255,179,0,.35);border-radius:16px;padding:24px;margin-top:22px;
+  }
+  .demo .hdr{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .badge{
+    font-family:var(--mono);font-weight:800;letter-spacing:.12em;font-size:14px;
+    background:var(--danger);color:#1a0505;padding:7px 14px;border-radius:8px;
+  }
+  .signals{margin-top:16px;display:grid;gap:8px}
+  .signal{
+    display:flex;gap:12px;align-items:flex-start;background:rgba(255,93,93,.07);
+    border:1px solid rgba(255,93,93,.22);border-radius:10px;padding:11px 14px;font-size:14px;line-height:1.45;
+  }
+  .signal i{font-style:normal;color:var(--danger);font-family:var(--mono);font-weight:700}
+  .reco{
+    margin-top:16px;background:rgba(61,220,132,.08);border:1px solid rgba(61,220,132,.3);
+    border-radius:10px;padding:14px 16px;font-size:14.5px;line-height:1.55;
+  }
+  .reco b{color:var(--acc)}
+
+  /* arch */
+  .arch{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+  .box{
+    flex:1;min-width:180px;background:var(--panel);border:1px solid var(--line);
+    border-radius:12px;padding:16px 18px;position:relative;
+  }
+  .box .lbl{margin-bottom:6px;color:var(--acc2)}
+  .box .n{font-size:15px;font-weight:700}
+  .box .d{font-size:12.5px;color:var(--dim);margin-top:5px;line-height:1.45}
+  .arrow{align-self:center;color:var(--dim);font-family:var(--mono)}
+
+  /* bars */
+  .bar-row{display:flex;align-items:center;gap:14px;margin-top:12px}
+  .bar-name{width:180px;font-size:14px;font-weight:650;flex-shrink:0}
+  .bar-track{flex:1;height:22px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;overflow:hidden;position:relative}
+  .bar-fill{height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:flex-end;padding-right:8px;font-family:var(--mono);font-size:11px;color:#04120c;font-weight:800}
+  .bar-fill.w{background:linear-gradient(90deg,#8a6d1f,var(--warn))}
+  .bar-fill.r{background:linear-gradient(90deg,#8a2f2f,var(--danger))}
+
+  /* cover */
+  .cover{justify-content:center}
+  .cover .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}
+  .cover .line{font-family:var(--mono);color:var(--dim);font-size:14px;margin-top:8px}
+  .hl{color:var(--acc)}
+  .strike{color:var(--danger);text-decoration:line-through;opacity:.75}
+
+  /* footer nav */
+  #nav{
+    position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;
+    padding:14px 28px;background:linear-gradient(180deg,transparent,rgba(7,11,10,.92) 40%);
+    z-index:50;font-family:var(--mono);font-size:12px;color:var(--dim);
+  }
+  #dots{display:flex;gap:7px}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--line);cursor:pointer;transition:.2s}
+  .dot.on{background:var(--acc);transform:scale(1.25)}
+  #nav .hint{letter-spacing:.08em;opacity:.75}
+  #nav button{
+    background:var(--panel2);border:1px solid var(--line);color:var(--txt);
+    font-family:var(--mono);font-size:13px;padding:7px 14px;border-radius:8px;cursor:pointer;
+  }
+  #nav button:hover{border-color:var(--acc);color:var(--acc)}
+
+  .note{
+    margin-top:auto;padding-top:22px;font-family:var(--mono);font-size:12px;color:var(--dim);
+    border-top:1px solid var(--line);letter-spacing:.03em;
+  }
+  .pill-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+
+  @media (max-width:900px){
+    .slide{padding:32px 22px 90px}
+    .g2,.g3,.g4{grid-template-columns:1fr}
+    .bar-name{width:120px;font-size:12.5px}
+  }
+  @media print{
+    body{overflow:visible;background:#fff;color:#111}
+    .slide{display:flex !important;position:relative;page-break-after:always;min-height:auto;padding:24px}
+    #nav{display:none}
+  }
+</style>
+</head>
+<body>
+<div id="deck">
+
+<!-- 1 CAPA -->
+<section class="slide active cover">
+  <div class="kicker">Briefing da equipe · uso interno</div>
+  <h1>Hack Brasil <span class="hl">2026</span><br>Direcionamento de produto</h1>
+  <p class="sub">Verificação das regras oficiais + análise crítica das ideias + recomendação de MVP para a fase online (4–30 nov).</p>
+  <div class="meta">
+    <span class="tag ok">Fonte: hackbrasil.com + regulamento (at. 09/11/2026)</span>
+    <span class="tag info">Trilha em decisão: Pagamentos &amp; Finanças vs Cibersegurança</span>
+    <span class="tag">Submissão: 30/11 · 23h59 (Brasília)</span>
+  </div>
+  <div class="grid g3" style="margin-top:34px">
+    <div class="card"><div class="lbl">Fase online</div><div class="big">26 dias</div><p>4 nov → 30 nov para construir, testar e submeter.</p></div>
+    <div class="card"><div class="lbl">Final presencial</div><div class="big">12 dez</div><p>Google for Startups · São Paulo. Top 5 por trilha.</p></div>
+    <div class="card"><div class="lbl">Recompensa</div><div class="big">R$ 2mi+</div><p>Em prêmios e benefícios. Critérios 100% por nota do júri.</p></div>
+  </div>
+  <div class="note">Navegação: ← → ou clique nos botões · apresentável em tela cheia (F11)</div>
+</section>
+
+<!-- 2 EVENTO VERIFICADO -->
+<section class="slide">
+  <div class="kicker">Etapa 0 · verificação oficial</div>
+  <h2>O evento, como está de fato no regulamento</h2>
+  <p class="sub">Todas as datas informadas pela equipe foram confirmadas. Abaixo, o que foi <b style="color:var(--acc)">confirmado</b> e o que faltava saber.</p>
+
+  <div class="tl">
+    <div class="step"><div class="d">04 nov · 21h</div><div class="t">Abertura encerra</div><div class="n">Repositórios só podem ser criados a partir daqui. Antes disso = desclassificação.</div></div>
+    <div class="step"><div class="d">04–30 nov</div><div class="t">Fase online</div><div class="n">Construção remota. Inscrições abertas durante todo o período.</div></div>
+    <div class="step hot"><div class="d">30 nov · 23h59</div><div class="t">Fim das submissões</div><div class="n">Repo + demo + vídeo. Última versão dentro do prazo vale. Horário de Brasília.</div></div>
+    <div class="step"><div class="d">02 dez</div><div class="t">Finalistas</div><div class="n">Top 5 por trilha, exige ≥ 20/40 pontos.</div></div>
+    <div class="step"><div class="d">04 dez · 23h59</div><div class="t">Confirmação</div><div class="n">Presença confirmada; sem isso, a vaga passa ao próximo da trilha.</div></div>
+    <div class="step"><div class="d">12 dez</div><div class="t">Final em SP</div><div class="n">Repos congelados até aqui. Desenvolvem ao vivo e apresentam ao júri.</div></div>
+  </div>
+
+  <div class="grid g4" style="margin-top:30px">
+    <div class="card"><h3>Time</h3><p>1 a 4 pessoas. Uma submissão por time. Composição trava em 30/11.</p></div>
+    <div class="card"><h3>Entregáveis</h3><p>Repo público no GitHub · demo HTTPS no ar · vídeo ≤ 3 min sem login (PT ou EN).</p></div>
+    <div class="card"><h3>Tecnologia</h3><p>Livre. IA permitida e <b style="color:var(--acc)">recomendada</b> (agentes, copilotos, LLMs).</p></div>
+    <div class="card"><h3>IP</h3><p>100% do projeto é do time. Hack Brasil não retém propriedade intelectual.</p></div>
+  </div>
+
+  <div class="note">Verificado em hackbrasil.com e hackbrasil.com/regulamento · se FAQ e regulamento divergirem, vale o regulamento</div>
+</section>
+
+<!-- 3 REGRAS QUE DECIDEM -->
+<section class="slide">
+  <div class="kicker">Etapa 0 · o que realmente pontua</div>
+  <h2>As 4 regras que decidem a nota</h2>
+  <p class="sub">O júri não premia "ideia genial": premia execução + impacto + comunicação, com peso igual. Isso muda como devemos gastar as 3 semanas.</p>
+
+  <div class="grid g2">
+    <div class="card">
+      <div class="lbl">Critérios de avaliação (peso igual)</div>
+      <ul class="clean">
+        <li><b>Execução técnica</b> — o produto funciona e está completo?</li>
+        <li><b>Implementação técnica</b> — arquitetura, qualidade de código, uso das tecnologias</li>
+        <li><b>Impacto</b> — efeito real sobre o problema e o público da trilha</li>
+        <li><b>Comunicação</b> — vídeo na fase online e apresentação na final</li>
+      </ul>
+      <div class="pill-row">
+        <span class="tag ok">0–10 cada · 0–40 total</span>
+        <span class="tag warn">Mínimo 20/40 para a final</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="lbl">Armadilhas de desclassificação</div>
+      <ul class="clean">
+        <li><b>Repo com histórico anterior</b> a 04/11 21h, ou fork com histórico antigo</li>
+        <li><b>Código antigo privado copiado</b> para o repo (liberado só código aberto já público, com commit indicando origem)</li>
+        <li><b>Commits entre 30/11 e 12/12</b> no repo congelado = risco de desclassificação</li>
+        <li><b>Dados pessoais reais de terceiros</b> na demo — finanças: usar ambiente de teste/simulação</li>
+        <li><b>Demo fora do ar</b> durante avaliação: jurado pode julgar só vídeo + código</li>
+      </ul>
+      <div class="pill-row">
+        <span class="tag bad">Repo público até ≥ 15/12</span>
+        <span class="tag bad">Licença não pode impedir executar/testar</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card neutral" style="margin-top:18px">
+    <h3>Leitura estratégica</h3>
+    <p style="color:var(--dim);font-size:14.5px;line-height:1.6">
+      Com peso igual nos quatro critérios, um MVP <b style="color:var(--txt)">curto, impecavelmente demonstrável e bem contado</b> vence uma plataforma gigante com defeitos.
+      Regra de ouro para as próximas 3 semanas: cada funcionalidade precisa aparecer em &lt; 40 segundos da demonstração — se não aparece, não entra no MVP.
+    </p>
+  </div>
+
+  <div class="note">Regulamento itens 6, 7 e 9 · priorizar escopo pelo que o júri consegue ver e testar</div>
+</section>
+
+<!-- 4 TRILHAS -->
+<section class="slide">
+  <div class="kicker">Decisão estratégica 1</div>
+  <h2>Trilha: Pagamentos &amp; Finanças <span style="color:var(--dim);font-weight:400">ou</span> Cibersegurança?</h2>
+  <p class="sub">Cada projeto concorre em <b>uma</b> trilha. O enquadramento é condição para concorrer — o júri pode remanejar ou tornar inelegível quem não se encaixa (item 5.4/5.5).</p>
+
+  <div class="grid g2">
+    <div class="card">
+      <div class="lbl">Trilha 05 · Pagamentos &amp; finanças</div>
+      <h3 style="margin-top:8px">Como pessoas e empresas pagam, recebem, guardam e investem</h3>
+      <p style="margin-top:8px">Exemplos oficiais: infraestrutura de pagamentos, trading bots, agentes financeiros, gestão financeira de pessoas e pequenas empresas, acesso a crédito.</p>
+      <div class="pill-row"><span class="tag info">Caixa Inteligente encaixa direto</span><span class="tag warn">"Antes do Pix" é encaixe indireto</span></div>
+    </div>
+    <div class="card">
+      <div class="lbl">Trilha 06 · Cibersegurança</div>
+      <h3 style="margin-top:8px">Proteção de pessoas, dados e sistemas</h3>
+      <p style="margin-top:8px">Exemplos oficiais: ferramentas de proteção, <b style="color:var(--acc)">detecção de fraude e de phishing</b>, privacidade, gestão de identidade e acesso.</p>
+      <div class="pill-row"><span class="tag ok">"Antes do Pix" casa literalmente</span><span class="tag">Concorrência: times de security</span></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:18px">
+    <h3>Como decidir (não é gosto — é estratégia)</h3>
+    <ul class="clean">
+      <li><b>Encaixe temático</b> — a dor que resolvemos define a trilha, não o nome do app. Prevenção a golpe antes do pagamento = "detecção de fraude e phishing" (cibersegurança).</li>
+      <li><b>Força da concorrência na trilha</b> — precisamos investigar quantos projetos e que nível há em cada trilha (top 5 por trilha na final; nota mínima 20/40 é a mesma em todas).</li>
+      <li><b>Narrativa do vídeo</b> — "protegemos o brasileiro antes do Pix" tem impacto claro; em pagamentos o júri pode esperar fluxo de dinheiro real.</li>
+      <li><b>Recomendação da mentorias:</b> se a ideia escolhida for a prevenção a golpes, <b style="color:var(--acc)">Cibersegurança</b> é o enquadramento mais defensável. Pagamentos só se o produto virar gestão/caixa de fato.</li>
+    </ul>
+  </div>
+
+  <div class="note">Confirmar no painel da equipe antes da submissão · um projeto, uma trilha, sem troca depois do envio final</div>
+</section>
+
+<!-- 5 MATRIZ DE IDEIAS -->
+<section class="slide">
+  <div class="kicker">Etapa 1–2 · análise crítica</div>
+  <h2>As 4 ideias em disputa</h2>
+  <p class="sub">Nenhuma é ruim. A pergunta é: qual delas tem <b>diferencial real</b>, MVP de 3 semanas e demonstração de 3 minutos — ao mesmo tempo?</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Ideia</th><th>Problema / público</th><th>Diferencial (ou falta dele)</th><th>Risco principal</th><th>MVP 30/11</th><th>Veredito</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1. Caixa Inteligente</td>
+        <td>MEIs não sabem quanto têm, o que vence e se conseguem pagar</td>
+        <td>IA para responder "posso comprar R$ 2 mil?" — mas fluxo de caixa, categorização e alertas já existem (Conta Azul, Nibo, Granatum, Serasa)</td>
+        <td>Produto maduro em concorrência madura; sem diferencial claro, júri pergunta "e por que vocês?"</td>
+        <td><span class="score mid">Médio</span> — dashboard + previsão dá, mas importação/OCR de extratos consome tempo</td>
+        <td><span class="tag warn">Reserva</span></td>
+      </tr>
+      <tr>
+        <td>2. MED Copilot</td>
+        <td>Comerciante contestado organiza evidências para a instituição</td>
+        <td>Nicho pouco servido no BR; inspiração Chargeflow (chargebacks)</td>
+        <td>Público estreito, jornada confusa (contestações são processadas pelo banco), risco de soar como "recuperador de dinheiro"</td>
+        <td><span class="score mid">Médio</span> — relatório + linha do tempo dá, mas exige muita explicação no pitch</td>
+        <td><span class="tag warn">Reserva</span></td>
+      </tr>
+      <tr>
+        <td>3. SOS Pix</td>
+        <td>Vítima de golpe não sabe o que fazer, onde correr, o que guardar</td>
+        <td>Dor enorme e emocional; MED, checklist e protocolos têm valor real</td>
+        <td>Já existem centrais de golpe, sites do BCB e apps de orientação — a diferença precisa ser a <b>organização da ação</b>, não a informação</td>
+        <td><span class="score ok">Alto</span> — checklist + fluxo guiado é 100% viável</td>
+        <td><span class="tag info">Forte concorrente interno</span></td>
+      </tr>
+      <tr class="pick">
+        <td>4. Antes do Pix</td>
+        <td>Qualquer brasileiro na dúvida antes de pagar: anúncio, link, cobrança, familiar "pedindo ajuda"</td>
+        <td>Intervenção <b>antes</b> do ato (os outros tratam a consequência). Um "não pague ainda" verificável e explicável</td>
+        <td>IA "detectora de golpe" não pode prometer certeza; concorrência de avisos embutidos em bancos/apps</td>
+        <td><span class="score ok">Alto</span> — análise por regras + IA sobre texto/link/screenshot, sem integração bancária</td>
+        <td><span class="tag ok">Recomendada</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="grid g3" style="margin-top:20px">
+    <div class="card risk"><h3>Descartar como eixo principal</h3><p>Caixa Inteligente, sem diferencial nítido em mercado saturado. Manter só se a call rejeitar prevenção.</p></div>
+    <div class="card neutral"><h3>Backup real</h3><p>SOS Pix — mesmo público, mesma competência técnica, encaixe em cibersegurança/pagamentos.</p></div>
+    <div class="card good"><h3>Fronteira</h3><p>Antes do Pix + SOS Pix podem virar o mesmo produto numa jornada única: <b>antes</b> e <b>depois</b> do pagamento. Ver slide 10.</p></div>
+  </div>
+
+  <div class="note">Scores da mentoria · concorrentes externos (Serasa, Granatum, Chargeflow, centrais de golpe) a validar com pesquisa primária</div>
+</section>
+
+<!-- 6 ANTES DO PIX -->
+<section class="slide">
+  <div class="kicker">Recomendação</div>
+  <h2>Antes do Pix — a proposta</h2>
+  <p class="sub">Um "pause button" financeiro: o brasileiro mostra o que está prestes a fazer e recebe os sinais de risco + o que verificar <b>antes</b> de pagar ou compartilhar dados.</p>
+
+  <div class="grid g3">
+    <div class="card">
+      <div class="lbl">Proposta de valor</div>
+      <h3 style="margin-top:8px">30 segundos de análise podem evitar anos de prejuízo</h3>
+      <p style="margin-top:8px">Foco na decisão, não na conta bancária. Sem integração bancária, sem mover dinheiro, sem base restrita do Pix.</p>
+    </div>
+    <div class="card">
+      <div class="lbl">Público-alvo</div>
+      <h3 style="margin-top:8px">Pessoas comuns + pequenos negócios</h3>
+      <p style="margin-top:8px">Idosos e familiares que ajudam idosos; compradores de marketplace/social; MEI que recebe cobrança suspeita.</p>
+    </div>
+    <div class="card">
+      <div class="lbl">Sinais de entrada</div>
+      <h3 style="margin-top:8px">Como o usuário fala com o produto</h3>
+      <div class="pill-row" style="margin-top:10px">
+        <span class="tag">Colar mensagem</span><span class="tag">Link</span><span class="tag">Screenshot</span>
+        <span class="tag">Cobrança</span><span class="tag">Descrever situação</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid g2" style="margin-top:16px">
+    <div class="card">
+      <div class="lbl">Cobertura de golpes (MVP)</div>
+      <div class="pill-row" style="margin-top:10px">
+        <span class="tag bad">Compra social/WhatsApp</span>
+        <span class="tag bad">Falso funcionário de banco</span>
+        <span class="tag bad">Falso familiar</span>
+        <span class="tag bad">Comprovante falso</span>
+        <span class="tag bad">Falso empréstimo</span>
+        <span class="tag bad">Investimento golpista</span>
+        <span class="tag bad">Phishing</span>
+        <span class="tag bad">Cobrança suspeita</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="lbl">O que NÃO prometemos</div>
+      <ul class="clean">
+        <li>Não garantimos detectar todos os golpes — explicamos <b>sinais encontrados</b></li>
+        <li>Não acessamos contas nem dados bancários</li>
+        <li>Não recuperamos dinheiro nem substituímos o MED/banco</li>
+        <li>Não classificamos desacordo comercial como fraude</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="note">Nome provisório · tagline sugerida: "Confira antes de pagar." · domínio e marca a decidir na call</div>
+</section>
+
+<!-- 7 DEMO -->
+<section class="slide">
+  <div class="kicker">Demonstração de 3 minutos · o coração do pitch</div>
+  <h2>A Pausa de Segurança em ação</h2>
+  <p class="sub">Cenário realista com dados sintéticos (exigido pelo regulamento para demos). Esta é a cena que deve ocupar ~60 segundos do vídeo.</p>
+
+  <div class="demo">
+    <div class="hdr">
+      <div>
+        <div class="lbl">Entrada do usuário</div>
+        <p style="font-size:15px;margin-top:6px;color:var(--txt)">"Celular novo por R$ 1.200. Vendedor do Instagram exige Pix agora e manda chave de CPF diferente do perfil."</p>
+      </div>
+      <div class="badge">RISCO ELEVADO</div>
+    </div>
+    <div class="signals">
+      <div class="signal"><i>01</i><span><b>Preço muito abaixo da referência</b> — 62% abaixo da faixa informada para o modelo.</span></div>
+      <div class="signal"><i>02</i><span><b>Pressão por pagamento imediato</b> — urgência + escassez artificial ("só hoje").</span></div>
+      <div class="signal"><i>03</i><span><b>Divergência vendedor × beneficiário</b> — nome da chave não bate com o perfil.</span></div>
+      <div class="signal"><i>04</i><span><b>Sem mecanismos de proteção</b> — sem nota fiscal, loja verificável ou entrega rastreável.</span></div>
+    </div>
+    <div class="reco">
+      <b>Recomendação:</b> não realize o pagamento. Confirme a identidade do vendedor por canal independente (telefone do site oficial, loja física) e exija pagamento com proteção de compra.
+      <span style="display:block;margin-top:8px;font-family:var(--mono);font-size:12px;color:var(--dim)">Gerado por: motor de regras (ransom determinístico) + LLM (interpretação e explicação) · cada sinal é rastreável até a regra que o acionou</span>
+    </div>
+  </div>
+
+  <div class="grid g4" style="margin-top:20px">
+    <div class="card"><div class="lbl">0:00</div><h3 style="margin-top:6px">Dor</h3><p>Números de golpe + história de 15s.</p></div>
+    <div class="card"><div class="lbl">0:15</div><h3 style="margin-top:6px">Input</h3><p>Cole mensagem/screenshot ao vivo.</p></div>
+    <div class="card"><div class="lbl">0:45</div><h3 style="margin-top:6px">Saída</h3><p>Risco + sinais + recomendação acionável.</p></div>
+    <div class="card"><div class="lbl">2:00</div><h3 style="margin-top:6px">Prova técnica</h3><p>Arquitetura, regras, dados, por que é difícil.</p></div>
+  </div>
+
+  <div class="note">Roteiro completo do vídeo e da demo interativa ficam na Etapa 4 · preparar 3 cenários prontos + 1 input ao vivo</div>
+</section>
+
+<!-- 8 RISCOS -->
+<section class="slide">
+  <div class="kicker">Análise crítica · sem anestesia</div>
+  <h2>Riscos honestos — e como neutralizá-los</h2>
+  <p class="sub">Toda ideia boa morre de três coisas: parecer óbvia, prometer demais ou não diferenciar. Eis onde Antes do Pix pode perder — e a resposta.</p>
+
+  <div class="grid g2">
+    <div class="card risk">
+      <h3>Risco 1 · "O banco já avisa antes do Pix"</h3>
+      <p>Bancos e apps mostram avisos genéricos. <b style="color:var(--txt)">Contra-resposta:</b> nós analisamos o <b>conteúdo específico</b> da situação (mensagem, link, anúncio) e devolvemos sinais explicados — não um aviso padrão de "atenção, golpe".</p>
+    </div>
+    <div class="card risk">
+      <h3>Risco 2 · "IA não consegue pegar golpe"</h3>
+      <p>Correto — e é por isso que a arquitetura é <b style="color:var(--txt)">regras determinísticas + IA para explicar</b>, nunca IA sozinha. Cada alerta é auditável. No pitch, dizemos isso antes que o júri pergunte.</p>
+    </div>
+    <div class="card risk">
+      <h3>Risco 3 · "Já existe app disso"</h3>
+      <p>Há sites de consulta e centrais de golpe. <b style="color:var(--txt)">Lacuna:</b> intervenção no momento exato da decisão, em português claro, com checklist do que verificar — não um dicionário de golpes nem uma central de atendimento.</p>
+    </div>
+    <div class="card risk">
+      <h3>Risco 4 · Regulatório / trilha</h3>
+      <p>Não podemos prometer recuperação de dinheiro nem acesso bancário; não somos instituição financeira. <b style="color:var(--txt)">Mitigação:</b> posicionamento de <b>educação e prevenção</b>, dados sintéticos na demo, enquadramento em cibersegurança.</p>
+    </div>
+  </div>
+
+  <div class="card good" style="margin-top:18px">
+    <h3>Diferencial defensável em uma frase</h3>
+    <p style="color:var(--dim);font-size:15px;line-height:1.6">
+      "Existe muito site que te conta <b style="color:var(--txt)">depois</b> que você caiu em golpe e muita ferramenta que avisa de forma genérica. <b style="color:var(--acc)">Antes do Pix</b> é o único que entra na conversa, no anúncio ou no link <b style="color:var(--txt)">no momento em que você ainda não pagou</b> — e te mostra exatamente o que está errado e o que verificar."
+    </p>
+  </div>
+
+  <div class="note">Essa frase deve aparecer na descrição oficial, no README e no vídeo — consistência de mensagem é critério de comunicação</div>
+</section>
+
+<!-- 9 MVP -->
+<section class="slide">
+  <div class="kicker">Etapa 3 · definição do produto</div>
+  <h2>MVP até 30/11 — escopo cirúrgico</h2>
+  <p class="sub">Tudo que não for demonstrável em 3 minutos fica fora. Times pequenos vencem por foco, não por volume de features.</p>
+
+  <div class="grid g2">
+    <div class="card good">
+      <h3>ENTRA no MVP</h3>
+      <ul class="clean">
+        <li><b>Análise de texto</b> — mensagem/cobrança colada → sinais + risco + explicação</li>
+        <li><b>Leitura de link</b> — domínio, encurtador, typosquatting, https, reputação heurística</li>
+        <li><b>OCR de screenshot</b> — extrai texto de imagem e roda no mesmo motor</li>
+        <li><b>Motor de regras antifraude</b> — 30–50 regras por categoria de golpe, com justificativa por sinal</li>
+        <li><b>Camada LLM</b> — interpreta, explica em português simples, gera a recomendação</li>
+        <li><b>3–5 playbooks</b> de golpes com checklist "o que verificar agora"</li>
+        <li><b>Dashboard de demonstração</b> — seus dados: volume, riscos, acionamento das regras</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>FORA do MVP</h3>
+      <ul class="clean">
+        <li>App nativo (iOS/Android) — web responsiva basta</li>
+        <li>Integração com bancos, Open Finance, APIs do Pix</li>
+        <li>Conta de usuário, login social, histórico em nuvem</li>
+        <li>API pública para empresas (mostrar o plano, não construir)</li>
+        <li>Monitoramento contínuo / extensão de navegador</li>
+        <li>Recuperação de dinheiro, abertura de MED oficial, contato com polícia</li>
+        <li>Classificação automática "é golpe" sem sinal humano verificável</li>
+      </ul>
+      <div class="pill-row"><span class="tag warn">Tudo aqui vira roadmap do pós-hackathon</span></div>
+    </div>
+  </div>
+
+  <div class="arch">
+    <div class="box"><div class="lbl">Frontend</div><div class="n">React</div><div class="d">Tela única: input → análise → resultado. Visual do "Pausa de Segurança".</div></div>
+    <span class="arrow">→</span>
+    <div class="box"><div class="lbl">API</div><div class="n">Python · FastAPI</div><div class="d">/analyze · /playbook · /link-check · fila de regras + LLM</div></div>
+    <span class="arrow">→</span>
+    <div class="box"><div class="lbl">Motor</div><div class="n">Regras + LLM + OCR</div><div class="d">Determinístico primeiro, LLM explica. Toda decisão rastreável.</div></div>
+    <span class="arrow">→</span>
+    <div class="box"><div class="lbl">Dados</div><div class="n">SQLite/PostgreSQL</div><div class="d">Regras, playbooks, logs de análise (dados sintéticos).</div></div>
+    <span class="arrow">→</span>
+    <div class="box"><div class="lbl">Demo</div><div class="n">HTTPS</div><div class="d">Deploy gratuito, sempre no ar. Dados 100% fictícios.</div></div>
+  </div>
+
+  <div class="grid g3" style="margin-top:18px">
+    <div class="card"><div class="lbl">Semana 1 (até 16/11)</div><p><b>Esqueleto:</b> repo novo, CI, esquema de dados, 10 regras, fluxo end-to-end rascunhado.</p></div>
+    <div class="card"><div class="lbl">Semana 2 (até 23/11)</div><p><b>Profundidade:</b> 40+ regras, OCR, 3 playbooks, dashboard, 5 cenários de teste.</p></div>
+    <div class="card"><div class="lbl">Semana 3 (até 30/11)</div><p><b>Empacotamento:</b> polimento UX, vídeo, README, demo no ar, submissão ≤ 30/11 23h59.</p></div>
+  </div>
+
+  <div class="note">Stack usa as forças do time: Python, pandas (regras/validação), SQLite, dashboards · IA via API de LLM (allowlisted pelo regulamento)</div>
+</section>
+
+<!-- 10 PROXIMOS PASSOS -->
+<section class="slide">
+  <div class="kicker">Etapa 4 · o que decidir agora</div>
+  <h2>Decisões da call + plano de execução</h2>
+  <p class="sub">Cinco decisões fecham o escopo. Sem elã, cada dia virando feature é um dia perdido.</p>
+
+  <div class="grid g2">
+    <div class="card">
+      <div class="lbl">Decisões para fechar hoje</div>
+      <ul class="clean">
+        <li><b>1. Ideia:</b> Antes do Pix (recomendado) · SOS Pix (backup) · Caixa Inteligente (só se rejeitar prevenção)</li>
+        <li><b>2. Trilha:</b> Cibersegurança (encaixe exato) vs Pagamentos &amp; Finanças (interesse original)</li>
+        <li><b>3. Nome final</b> e tagline — Antes do Pix é provisório</li>
+        <li><b>4. Modelo de IA:</b> qual LLM, custo, fallback offline das regras</li>
+        <li><b>5. Papéis:</b> quem lidera produto, backend, frontend/demo, vídeo+README</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="lbl">Divisão sugerida (time de 4)</div>
+      <ul class="clean">
+        <li><b>Product/Demo</b> — cenários, UX da Pausa de Segurança, critérios de aceitação</li>
+        <li><b>Backend/Regras</b> — motor antifraude, playbooks, integração LLM+OCR</li>
+        <li><b>Frontend</b> — React, fluxo de análise, dashboard de demonstração</li>
+        <li><b>Comunicação</b> — vídeo ≤3 min, README, descrição oficial, ensaio de pitch</li>
+        <li style="border:none;padding-top:12px"><b>Regra comum:</b> todo mundo commita no repo novo (após 04/11 21h) e nada de código antigo privado.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid g3" style="margin-top:18px">
+    <div class="card good">
+      <h3>Entregáveis imediatos</h3>
+      <p>1) Repo novo + README rascunho · 2) 10 regras no ar · 3) 1 cenário funcionando ponta a ponta · 4) inscrição/painel do time confirmada.</p>
+    </div>
+    <div class="card neutral">
+      <h3>Pesquisa pendente (48h)</h3>
+      <p>Validar: (a) concorrentes diretos de prevenção no BR; (b) dados atuais de golpe (BCB, Serasa, Febraban); (c) força das trilhas 05 e 06.</p>
+    </div>
+    <div class="card">
+      <h3>Fontes oficiais</h3>
+      <p>hackbrasil.com · /regulamento · /painel/time · Discord <span style="font-family:var(--mono)">#pedir-mentoria</span> · oi@hackbrasil.com</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:18px;border-color:rgba(61,220,132,.4)">
+    <div class="lbl" style="color:var(--acc)">Próximo marco</div>
+    <p style="color:var(--txt);font-size:16px;margin-top:8px;line-height:1.55">
+      Fechar ideia + trilha hoje. Até <b>16/11</b>: um cenário real funcionando de ponta a ponta na demo.
+      Isso elimina o maior risco do hackathon — <b>descobrir tarde demais que não dá tempo</b>.
+    </p>
+  </div>
+
+  <div class="note">Documento vivo · atualizar conforme decisões da call · dados do evento conferidos em 09/11/2026 no site oficial</div>
+</section>
+
+</div>
+
+<div id="nav">
+  <div style="display:flex;align-items:center;gap:18px">
+    <button id="prev">←</button>
+    <button id="next">→</button>
+    <span id="counter">1 / 10</span>
+  </div>
+  <div id="dots"></div>
+  <div class="hint">HACK BRASIL 2026 · BRIEFING INTERNO · ← → para navegar</div>
+</div>
+
+<script>
+  const slides=[...document.querySelectorAll('.slide')];
+  const dots=document.getElementById('dots');
+  const counter=document.getElementById('counter');
+  let i=0;
+  slides.forEach((_,k)=>{
+    const d=document.createElement('div');
+    d.className='dot'+(k===0?' on':'');
+    d.onclick=()=>go(k);
+    dots.appendChild(d);
+  });
+  function go(k){
+    i=Math.max(0,Math.min(slides.length-1,k));
+    slides.forEach((s,n)=>s.classList.toggle('active',n===i));
+    [...dots.children].forEach((d,n)=>d.classList.toggle('on',n===i));
+    counter.textContent=(i+1)+' / '+slides.length;
+  }
+  document.getElementById('next').onclick=()=>go(i+1);
+  document.getElementById('prev').onclick=()=>go(i-1);
+  document.addEventListener('keydown',e=>{
+    if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();go(i+1);}
+    if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();go(i-1);}
+    if(e.key==='Home')go(0);
+    if(e.key==='End')go(slides.length-1);
+  });
+</script>
+</body>
+</html>
