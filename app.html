@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RotaCerta – demo: monte a rota do dia</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#EEF2F4;--ink:#17262E;--muted:#4A5C66;--route:#0E7A6B;--tangle:#C23A2B;--line:#C9D4DA;--card:#fff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 1.0625rem/1.55 "Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:60rem;margin:0 auto;padding:1rem 1.25rem 3rem}
+a{color:var(--route)}
+:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.brand{font-weight:800;font-size:1.25rem;text-decoration:none;color:var(--ink)}.brand span{color:var(--route)}
+h1{font-size:clamp(1.75rem,5vw,2.75rem);line-height:1.1;letter-spacing:-.02em;margin:1.5rem 0 .5rem}
+.box{background:var(--card);border:1px solid var(--line);border-radius:.5rem;padding:1.25rem;margin-top:1.25rem}
+label{display:block;font-weight:600;margin:.75rem 0 .25rem}
+input,textarea{width:100%;font:inherit;padding:.625rem;border:1px solid var(--muted);border-radius:.25rem;background:#fff;color:var(--ink)}
+textarea{min-height:9rem;resize:vertical}
+.row{display:flex;gap:.625rem;flex-wrap:wrap;margin-top:1rem}
+button,.btn{font:600 1rem inherit;font-family:inherit;padding:.625rem 1rem;border-radius:.25rem;border:2px solid var(--ink);background:#fff;color:var(--ink);cursor:pointer;text-decoration:none;display:inline-block}
+button.p{background:var(--route);border-color:var(--route);color:#fff}
+button:disabled{opacity:.55;cursor:wait}
+button[aria-pressed=true]{background:var(--ink);color:#fff}
+small,.hint{color:var(--muted);font-size:.9375rem}
+#msg{min-height:1.5rem;font-weight:600;margin:.75rem 0 0}
+#msg.err{color:var(--tangle)}
+.sum{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin:0 0 1rem}
+.sum div{border-left:5px solid var(--route);padding:.25rem .75rem;background:var(--paper)}
+.sum b{display:block;font-size:1.5rem;line-height:1.2}
+.out{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;align-items:start}
+svg{width:100%;height:auto;background:var(--paper);border-radius:.375rem}
+.rt{fill:none;stroke:var(--route);stroke-width:2.5;stroke-linejoin:round}
+.dot{fill:#fff;stroke:var(--ink);stroke-width:2}.st{fill:var(--ink)}.dot.ok{fill:var(--route)}.dot.pend{fill:var(--tangle)}
+.n{font:700 9px "Bricolage Grotesque",sans-serif;text-anchor:middle;dominant-baseline:central;fill:var(--ink)}.dot.ok+.n,.dot.pend+.n{fill:#fff}
+ol{list-style:none;margin:0;padding:0;display:grid;gap:.625rem}
+li.s{display:grid;grid-template-columns:2rem 1fr;gap:.625rem;padding:.625rem;border:1px solid var(--line);border-radius:.375rem}
+li.s .i{width:2rem;height:2rem;border-radius:50%;background:var(--route);color:#fff;display:grid;place-items:center;font-weight:800}
+li.s.ok{background:#E3F2EF}li.s.pend{background:#FBEAE7}
+.acts{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.375rem}
+.acts button,.acts a{padding:.25rem .625rem;font-size:.9375rem}
+[hidden]{display:none!important}
+@media (max-width:48rem){.out{grid-template-columns:1fr}.sum{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="brand" href="index.html">Rota<span>Certa</span></a>
+<h1>Monte a rota do dia</h1>
+<p class="hint">Demo mínima do RotaCerta: informe as entregas, veja a ordem sugerida, abra no mapa e marque cada uma como entregue ou pendente.</p>
+
+<div class="box">
+  <label for="orig">Loja (ponto de partida)</label>
+  <input id="orig" autocomplete="off" placeholder="Endereço ou coordenadas, ex.: -23.5614, -46.6559">
+  <label for="list">Entregas (uma por linha, máximo 25)</label>
+  <textarea id="list" placeholder="Rua, número, cidade&#10;ou: Nome do pedido | -23.5505, -46.6333"></textarea>
+  <div class="row">
+    <button class="p" id="go">Calcular rota</button>
+    <button id="demo">Usar exemplo fictício</button>
+    <button id="clr">Limpar</button>
+  </div>
+  <p id="msg" role="status" aria-live="polite"></p>
+  <small>Endereços são localizados no OpenStreetMap (Nominatim), cerca de 1 por segundo. Linhas com coordenadas não usam a internet. Inclua cidade e UF para melhorar a busca.</small>
+</div>
+
+<div class="box" id="res" hidden>
+  <div class="sum">
+    <div><b id="k1">0</b>paradas</div>
+    <div><b id="k2">0 km</b>na ordem de entrada</div>
+    <div><b id="k3">0 km</b>na ordem sugerida</div>
+    <div><b id="k4">0/0</b>concluídas</div>
+  </div>
+  <p class="hint" style="margin-top:0">Distâncias em linha reta, apenas estimativas. O trajeto real pelas ruas será maior.</p>
+  <div class="out">
+    <svg id="plot" viewBox="0 0 300 240" role="img" aria-label="Mapa esquemático da rota sugerida"></svg>
+    <div><ol id="stops"></ol><div class="row" id="links"></div><small id="note"></small></div>
+  </div>
+</div>
+</div>
+<script>
+//--core
+const R=6371,rad=x=>x*Math.PI/180;
+function hav(a,b){const p=rad(b.lat-a.lat),q=rad(b.lon-a.lon);const h=Math.sin(p/2)**2+Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.sin(q/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
+function len(o,pts){let d=0,p=o;for(const q of pts){d+=hav(p,q);p=q}return d}
+function order(o,pts){
+  let rest=pts.slice(),r=[],cur=o;
+  while(rest.length){let bi=0,bd=Infinity;rest.forEach((q,i)=>{const d=hav(cur,q);if(d<bd){bd=d;bi=i}});cur=rest.splice(bi,1)[0];r.push(cur)}
+  let imp=true;
+  while(imp){imp=false;
+    for(let i=0;i<r.length-1;i++)for(let j=i+1;j<r.length;j++){
+      const c=[o,...r],a=c[i],b=c[i+1],e=c[j+1],d=c[j+2];
+      const before=hav(a,b)+(d?hav(e,d):0),after=hav(a,e)+(d?hav(b,d):0);
+      if(after<before-1e-9){r=[...r.slice(0,i),...r.slice(i,j+1).reverse(),...r.slice(j+1)];imp=true}
+    }}
+  return r}
+const COORD=/^(-?\d{1,3}\.\d+)\s*[,;]\s*(-?\d{1,3}\.\d+)$/;
+function parseLine(t){t=t.trim();let label=t,c=t;const k=t.indexOf('|');if(k>-1){label=t.slice(0,k).trim();c=t.slice(k+1).trim()}
+  const m=c.match(COORD);return{label:label||c,q:c,pt:m?{lat:+m[1],lon:+m[2]}:null}}
+function mapsLinks(o,stops,size=8){const out=[];let from=o;
+  for(let i=0;i<stops.length;i+=size){const ch=stops.slice(i,i+size),d=ch[ch.length-1],w=ch.slice(0,-1);
+    const f=p=>p.lat+','+p.lon;
+    out.push('https://www.google.com/maps/dir/?api=1&travelmode=driving&origin='+f(from)+'&destination='+f(d)+(w.length?'&waypoints='+w.map(f).join('%7C'):''));from=d}
+  return out}
+//--end
+const $=s=>document.querySelector(s),sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let S={o:null,entry:[],stops:[]};
+function save(){try{localStorage.setItem('rc1',JSON.stringify(S))}catch(e){}}
+function msg(t,e){const m=$('#msg');m.textContent=t;m.className=e?'err':''}
+async function geo(q){const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&q='+encodeURIComponent(q));
+  if(!r.ok)throw new Error('http '+r.status);const j=await r.json();return j[0]?{lat:+j[0].lat,lon:+j[0].lon}:null}
+async function resolve(p,first){if(p.pt)return p.pt;if(!first.v)await sleep(1100);first.v=false;return geo(p.q)}
+async function calc(){
+  const o=parseLine($('#orig').value),ls=$('#list').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  if(!$('#orig').value.trim()){msg('Informe o ponto de partida.',1);return}
+  if(!ls.length){msg('Informe ao menos uma entrega.',1);return}
+  if(ls.length>25){msg('Máximo de 25 entregas nesta demo.',1);return}
+  $('#go').disabled=true;const bad=[],ok=[],first={v:true};
+  try{const op=await resolve(o,first);if(!op){msg('Não encontrei o ponto de partida. Inclua cidade e UF ou use coordenadas.',1);return}
+    o.pt=op;
+    for(let i=0;i<ls.length;i++){msg('Localizando endereços… '+(i+1)+' de '+ls.length);const p=parseLine(ls[i]);
+      try{const pt=await resolve(p,first);pt?ok.push({label:p.label,lat:pt.lat,lon:pt.lon,st:null}):bad.push(p.label)}catch(e){bad.push(p.label)}}
+  }catch(e){msg('Falha ao consultar o serviço de endereços. Verifique a conexão ou use coordenadas.',1);return}
+  finally{$('#go').disabled=false}
+  if(!ok.length){msg('Nenhum endereço foi localizado.',1);return}
+  const ord=order(o.pt,ok);
+  S={o:{label:o.label,...o.pt},entry:ok.map(p=>({lat:p.lat,lon:p.lon})),stops:ord};save();render();
+  msg(bad.length?'Rota pronta. Não localizei: '+bad.join('; ')+'.':'Rota pronta.',bad.length>0)}
+function render(){
+  if(!S.o||!S.stops.length){$('#res').hidden=true;return}
+  $('#res').hidden=false;const st=S.stops,done=st.filter(s=>s.st==='ok').length;
+  $('#k1').textContent=st.length;$('#k2').textContent=len(S.o,S.entry).toFixed(1)+' km';
+  $('#k3').textContent=len(S.o,st).toFixed(1)+' km';$('#k4').textContent=done+'/'+st.length;
+  const all=[S.o,...st],la=all.map(p=>p.lat),lo=all.map(p=>p.lon),k=Math.cos(rad(la[0]));
+  const x0=Math.min(...lo),y1=Math.max(...la),w=(Math.max(...lo)-x0)*k||1e-4,h=(y1-Math.min(...la))||1e-4,sc=Math.min(260/w,200/h);
+  const P=p=>[20+(p.lon-x0)*k*sc,20+(y1-p.lat)*sc];
+  let g='<polyline class="rt" points="'+all.map(p=>P(p).map(v=>v.toFixed(1)).join(',')).join(' ')+'"/>';
+  const [sx,sy]=P(S.o);g+='<rect class="st" x="'+(sx-8)+'" y="'+(sy-8)+'" width="16" height="16" rx="3"/>';
+  st.forEach((p,i)=>{const[x,y]=P(p);g+='<circle class="dot '+(p.st||'')+'" cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="9"/><text class="n" x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'">'+(i+1)+'</text>'}) ;
+  $('#plot').innerHTML=g;
+  const ol=$('#stops');ol.innerHTML='';
+  st.forEach((p,i)=>{const li=document.createElement('li');li.className='s '+(p.st||'');
+    li.innerHTML='<span class="i">'+(i+1)+'</span><div><b></b><div class="acts"></div></div>';li.querySelector('b').textContent=p.label;
+    const a=li.querySelector('.acts');
+    [['ok','Entregue'],['pend','Pendente']].forEach(([v,t])=>{const b=document.createElement('button');b.textContent=t;b.setAttribute('aria-pressed',p.st===v);
+      b.onclick=()=>{p.st=p.st===v?null:v;save();render()};a.appendChild(b)});
+    const w=document.createElement('a');w.className='btn';w.textContent='Waze';w.target='_blank';w.rel='noopener';
+    w.href='https://waze.com/ul?navigate=yes&ll='+p.lat+','+p.lon;a.appendChild(w);ol.appendChild(li)});
+  const rem=st.filter(s=>s.st!=='ok'),L=$('#links');L.innerHTML='';
+  mapsLinks(S.o,rem).forEach((u,i,arr)=>{const a=document.createElement('a');a.className='btn';a.target='_blank';a.rel='noopener';a.href=u;
+    a.textContent=arr.length>1?'Abrir trecho '+(i+1)+' no Google Maps':'Abrir rota no Google Maps';L.appendChild(a)});
+  $('#note').textContent=rem.length>8?'Os links são divididos em trechos de até 8 paradas.':''}
+$('#go').onclick=calc;
+$('#demo').onclick=()=>{$('#orig').value='Pizzaria (exemplo) | -23.5614, -46.6559';
+  const c=[[-23.5505,-46.6333],[-23.5702,-46.6512],[-23.5440,-46.6611],[-23.5611,-46.6188],[-23.5809,-46.6402],[-23.5389,-46.6405],[-23.5655,-46.6703],[-23.5532,-46.6482],[-23.5750,-46.6290],[-23.5470,-46.6700],[-23.5580,-46.6350],[-23.5690,-46.6600]];
+  $('#list').value=c.map((p,i)=>'Pedido '+(i+1)+' (fictício) | '+p[0]+', '+p[1]).join('\n');msg('Exemplo carregado. Clique em Calcular rota.')};
+$('#clr').onclick=()=>{S={o:null,entry:[],stops:[]};save();$('#orig').value='';$('#list').value='';msg('');render()};
+try{const j=JSON.parse(localStorage.getItem('rc1')||'null');if(j&&j.o&&j.stops&&j.stops.length){S=j;render()}}catch(e){}
+</script>
+</body>
+</html>
